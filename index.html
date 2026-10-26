@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMB Agency - Quản lý công việc</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f4f5f7;
+            color: #172b4d;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .svg-icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: -0.125em;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* Header */
+        header {
+            background: #0052cc;
+            color: white;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .role-badge.admin { background: #ffab00; color: #172b4d; }
+        .role-badge.user { background: #36b37e; color: white; }
+
+        .role-switch {
+            display: flex;
+            gap: 8px;
+        }
+
+        .role-switch button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .role-switch button:hover { background: rgba(255,255,255,0.3); }
+        .role-switch button.active { background: white; color: #0052cc; font-weight: 600; }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #dfe1e6;
+            padding: 16px 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b778c;
+            padding: 8px 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            transition: background 0.15s;
+        }
+
+        .sidebar-item:hover { background: #ebecf0; }
+
+        .sidebar-item.active {
+            background: #e6f0ff;
+            color: #0052cc;
+            font-weight: 600;
+            border-left: 3px solid #0052cc;
+        }
+
+        .sidebar-item .svg-icon { font-size: 16px; color: #5e6c84; }
+        .sidebar-item.active .svg-icon { color: #0052cc; }
+
+        .sidebar-item .count {
+            margin-left: auto;
+            background: #dfe1e6;
+            color: #42526e;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .main-header h1 {
+            font-size: 24px;
+            color: #172b4d;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn .svg-icon { font-size: 14px; }
+
+        .btn-primary { background: #0052cc; color: white; }
+        .btn-primary:hover { background: #0747a6; }
+        .btn-success { background: #36b37e; color: white; }
+        .btn-success:hover { background: #2d9469; }
+        .btn-danger { background: #de350b; color: white; }
+        .btn-danger:hover { background: #bf2600; }
+        .btn-ghost { background: white; color: #42526e; border: 1px solid #dfe1e6; }
+        .btn-ghost:hover { background: #f4f5f7; }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-sm .svg-icon { font-size: 11px; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+        }
+
+        .search-box .svg-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b778c;
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 38px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #0052cc;
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+        }
+
+        .filter-select {
+            padding: 8px 30px 8px 12px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+            color: #42526e;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b778c'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            background-size: 18px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #0052cc;
+        }
+
+        /* Task board */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .column {
+            background: #ebecf0;
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 400px;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 4px 10px;
+        }
+
+        .column-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5e6c84;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .column-title .svg-icon { font-size: 14px; }
+
+        .column-count {
+            background: #dfe1e6;
+            color: #42526e;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* Task card - compact fixed size */
+        .task-card {
+            background: white;
+            border-radius: 6px;
+            padding: 10px 10px 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #0052cc;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .task-card.approved { border-left-color: #36b37e; background: #f0fff4; }
+        .task-card.rejected { border-left-color: #de350b; background: #fff5f5; }
+
+        /* Priority indicator */
+        .task-card .priority-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 24px;
+            border-bottom-left-radius: 4px;
+        }
+        .priority-bar.high { background: #de350b; }
+        .priority-bar.medium { background: #ffab00; }
+        .priority-bar.low { background: #36b37e; }
+
+        .task-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #172b4d;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+            padding-right: 8px;
+        }
+
+        .task-desc {
+            font-size: 11px;
+            color: #6b778c;
+            margin-bottom: 4px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        .task-id {
+            font-size: 10px;
+            color: #6b778c;
+            font-weight: 600;
+        }
+
+        .task-status {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .task-status .svg-icon { font-size: 9px; }
+
+        .status-todo { background: #dfe1e6; color: #42526e; }
+        .status-progress { background: #deebff; color: #0052cc; }
+        .status-done { background: #e3fcef; color: #006644; }
+        .status-approved { background: #36b37e; color: white; }
+        .status-rejected { background: #de350b; color: white; }
+
+        .task-assignee {
+            font-size: 10px;
+            color: #6b778c;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-assignee .svg-icon { font-size: 10px; }
+
+        .task-badges {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .task-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: #ebecf0;
+            color: #5e6c84;
+        }
+
+        .task-badge .svg-icon { font-size: 9px; }
+        .task-badge.overdue { background: #ffebe6; color: #de350b; }
+        .task-badge.comments { background: #e6f0ff; color: #0052cc; }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+            padding-top: 6px;
+            border-top: 1px solid #f4f5f7;
+        }
+
+        .task-actions .btn {
+            flex: 0 0 auto;
+            justify-content: center;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .task-actions .btn .svg-icon { font-size: 10px; }
+
+        .btn-delete {
+            background: #ffebe6;
+            color: #de350b;
+            border: 1px solid #ffbdad;
+        }
+
+        .btn-delete:hover {
+            background: #de350b;
+            color: white;
+            border-color: #de350b;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b778c;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .empty-state .svg-icon {
+            font-size: 32px;
+            opacity: 0.4;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(9, 30, 66, 0.54);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            width: 520px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .modal-wide { width: 720px; }
+
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #172b4d;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5e6c84;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0052cc;
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 70px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 300;
+            animation: slideIn 0.3s ease;
+            max-width: calc(100vw - 48px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification .svg-icon { font-size: 16px; }
+        .notification.success { background: #36b37e; }
+        .notification.error { background: #de350b; }
+        .notification.info { background: #0052cc; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Confirm dialog */
+        .confirm-box {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            width: 400px;
+            max-width: 100%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .confirm-box h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #172b4d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confirm-box h2 .svg-icon { color: #de350b; font-size: 20px; }
+
+        .confirm-box p {
+            font-size: 14px;
+            color: #5e6c84;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .confirm-box .task-preview {
+            background: #f4f5f7;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 12px 0;
+            border-left: 3px solid #de350b;
+            word-break: break-word;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Detail Modal layout */
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 24px;
+        }
+
+        .detail-main { min-width: 0; }
+
+        .detail-sidebar {
+            border-left: 1px solid #dfe1e6;
+            padding-left: 20px;
+        }
+
+        .detail-sidebar .side-group {
+            margin-bottom: 16px;
+        }
+
+        .detail-sidebar .side-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b778c;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .detail-sidebar .side-value {
+            font-size: 13px;
+            color: #172b4d;
+        }
+
+        .detail-sidebar select,
+        .detail-sidebar input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            background: white;
+        }
+
+        .detail-sidebar select:focus,
+        .detail-sidebar input:focus {
+            outline: none;
+            border-color: #0052cc;
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+        }
+
+        .detail-title-input {
+            width: 100%;
+            font-size: 20px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            font-family: inherit;
+            color: #172b4d;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .detail-title-input:hover {
+            border-color: #dfe1e6;
+            background: white;
+        }
+
+        .detail-title-input:focus {
+            outline: none;
+            border-color: #0052cc;
+            background: white;
+        }
+
+        .detail-desc-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #42526e;
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.5;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .detail-desc-input:hover {
+            border-color: #dfe1e6;
+            background: white;
+        }
+
+        .detail-desc-input:focus {
+            outline: none;
+            border-color: #0052cc;
+            background: white;
+        }
+
+        /* Comments */
+        .comments-section {
+            margin-top: 20px;
+            border-top: 1px solid #dfe1e6;
+            padding-top: 16px;
+        }
+
+        .comments-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #172b4d;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .comments-title .svg-icon { color: #6b778c; }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 12px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #f4f5f7;
+            border-radius: 6px;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0052cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .comment-body { flex: 1; min-width: 0; }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .comment-author {
+            font-size: 13px;
+            font-weight: 700;
+            color: #172b4d;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #6b778c;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #42526e;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .comment-compose {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .comment-compose textarea {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .comment-compose textarea:focus {
+            outline: none;
+            border-color: #0052cc;
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+        }
+
+        /* History */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            font-size: 12px;
+            color: #5e6c84;
+            padding: 6px 8px;
+            background: #fafbfc;
+            border-radius: 4px;
+            border-left: 2px solid #dfe1e6;
+        }
+
+        .history-item .time {
+            color: #8993a4;
+            font-size: 11px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid #dfe1e6;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #5e6c84;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab .svg-icon { font-size: 14px; }
+        .tab:hover { color: #172b4d; }
+        .tab.active {
+            color: #0052cc;
+            border-bottom-color: #0052cc;
+            font-weight: 600;
+        }
+
+        /* Approval list card */
+        .approval-card {
+            margin-bottom: 12px;
+            cursor: pointer;
+            background: white;
+            border-radius: 6px;
+            padding: 14px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-left: 3px solid #0052cc;
+            transition: all 0.2s;
+        }
+
+        .approval-card:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #6b778c;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-card .label .svg-icon { font-size: 13px; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #172b4d; }
+
+        .stat-card.pending .label .svg-icon,
+        .stat-card.pending .value { color: #ffab00; }
+        .stat-card.approved .label .svg-icon,
+        .stat-card.approved .value { color: #36b37e; }
+        .stat-card.rejected .label .svg-icon,
+        .stat-card.rejected .value { color: #de350b; }
+
+        .stats-table-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .stats-table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 400px;
+        }
+
+        /* ============ FOOTER ============ */
+        footer {
+            background: linear-gradient(135deg, #172b4d 0%, #0f1f38 100%);
+            color: #dfe1e6;
+            padding: 32px 24px 20px;
+            border-top: 3px solid #0052cc;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0052cc 0%, #4c9aff 50%, #36b37e 100%);
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .footer-brand-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .footer-brand-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand-name .svg-icon { color: #4c9aff; font-size: 18px; }
+
+        .footer-tagline {
+            font-size: 13px;
+            color: #8993a4;
+            line-height: 1.5;
+            max-width: 340px;
+        }
+
+        .footer-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .footer-contact-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4c9aff;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #dfe1e6;
+        }
+
+        .footer-contact-item .icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(76, 154, 255, 0.15);
+            border: 1px solid rgba(76, 154, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            color: #4c9aff;
+        }
+
+        .footer-contact-item .info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .footer-contact-item .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #8993a4;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .footer-contact-item a {
+            color: #dfe1e6;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .footer-contact-item a:hover { color: #4c9aff; text-decoration: underline; }
+
+        .footer-divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 8px;
+        }
+
+        .footer-bottom {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 12px;
+            color: #8993a4;
+            padding-top: 8px;
+        }
+
+        .footer-bottom .heart { color: #de350b; display: inline-flex; vertical-align: middle; }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(9, 30, 66, 0.54);
+            z-index: 98;
+        }
+
+        .sidebar-overlay.active { display: block; }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 1024px) {
+            .board { grid-template-columns: repeat(2, 1fr); }
+            .board .column:last-child { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 900px) {
+            .board { grid-template-columns: 1fr; }
+            .board .column:last-child { grid-column: auto; }
+            .column { min-height: auto; }
+            .main { padding: 16px; }
+            .main-header h1 { font-size: 20px; }
+            .role-switch button { padding: 6px 10px; font-size: 12px; }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: inline-flex; }
+            .sidebar {
+                position: fixed;
+                top: 56px;
+                left: 0;
+                bottom: 0;
+                z-index: 99;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+                width: 260px;
+            }
+            .sidebar.open { transform: translateX(0); }
+            header { padding: 0 12px; }
+            .logo { font-size: 16px; }
+            .role-badge { display: none; }
+            .role-switch { gap: 4px; }
+            .role-switch button { padding: 5px 8px; font-size: 11px; }
+            .main { padding: 12px; }
+            .main-header h1 { font-size: 18px; }
+            .btn { padding: 7px 12px; font-size: 13px; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .stat-card .value { font-size: 20px; }
+            .detail-layout { grid-template-columns: 1fr; gap: 16px; }
+            .detail-sidebar { border-left: none; padding-left: 0; border-top: 1px solid #dfe1e6; padding-top: 16px; }
+            .modal { padding: 16px; }
+            .form-row { grid-template-columns: 1fr; }
+            .notification { top: 64px; right: 12px; left: 12px; max-width: none; font-size: 13px; }
+            footer { padding: 24px 16px 16px; }
+            .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+            .footer-brand-name { font-size: 18px; }
+            .footer-brand-name .svg-icon { font-size: 15px; }
+            .footer-tagline { font-size: 12px; }
+            .footer-contact-item { font-size: 13px; }
+            .footer-bottom { flex-direction: column; text-align: center; font-size: 11px; }
+        }
+
+        @media (max-width: 400px) {
+            .logo { font-size: 14px; }
+            .role-switch button { padding: 4px 6px; font-size: 10px; }
+            .stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Symbol Library -->
+    <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+        <defs>
+            <symbol id="icon-user" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+            <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></symbol>
+            <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></symbol>
+            <symbol id="icon-board" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></symbol>
+            <symbol id="icon-check-circle" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></symbol>
+            <symbol id="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+            <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></symbol>
+            <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+            <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+            <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+            <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+            <symbol id="icon-clock" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></symbol>
+            <symbol id="icon-thumbs-up" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></symbol>
+            <symbol id="icon-thumbs-down" viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></symbol>
+            <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></symbol>
+            <symbol id="icon-mail" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></symbol>
+            <symbol id="icon-diamond" viewBox="0 0 24 24"><path d="M12.16 3h-.32L9.21 8.25h5.58L12.16 3zm-5.7 0L2.73 8.25h4.74L6.46 3zm11.08 0l-1.01 5.25h4.74L17.54 3zM2 9.75l10 11.02L12 9.75H2zm11.5 0L12 20.77l10-11.02h-8.5z"/></symbol>
+            <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+            <symbol id="icon-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+            <symbol id="icon-party" viewBox="0 0 24 24"><path d="M2 22l14-5-9-9-5 14zm12.53-9.03l1.41 1.41-2.83 2.83-1.41-1.41 2.83-2.83zm5.66-5.66l-1.41 1.41-2.83-2.83 1.41-1.41 2.83 2.83zM13.34 2.66l1.41-1.41 2.83 2.83-1.41 1.41-2.83-2.83zm5.66 5.66l1.41-1.41 2.83 2.83-1.41 1.41-2.83-2.83z"/></symbol>
+            <symbol id="icon-tag" viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></symbol>
+            <symbol id="icon-flag" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></symbol>
+            <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></symbol>
+            <symbol id="icon-event-available" viewBox="0 0 24 24"><path d="M16.53 11.06L15.47 10l-4.88 4.88-2.12-2.12-1.06 1.06L10.59 17l5.94-5.94zM19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></symbol>
+            <symbol id="icon-comment" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></symbol>
+            <symbol id="icon-history" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></symbol>
+            <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></symbol>
+            <symbol id="icon-sort" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></symbol>
+            <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></symbol>
+            <symbol id="icon-copy" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></symbol>
+            <symbol id="icon-attach" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></symbol>
+            <symbol id="icon-clear-filter" viewBox="0 0 24 24"><path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z"/></symbol>
+        </defs>
+    </svg>
+
+    <header>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+                <svg class="svg-icon"><use href="#icon-menu"/></svg>
+            </button>
+            <div class="logo">HMB Agency</div>
+        </div>
+        <div class="user-info">
+            <div class="role-switch">
+                <button id="roleUser" class="active" onclick="switchRole('user')">
+                    <svg class="svg-icon"><use href="#icon-user"/></svg> Nhân viên
+                </button>
+                <button id="roleAdmin" onclick="switchRole('admin')">
+                    <svg class="svg-icon"><use href="#icon-shield"/></svg> Admin
+                </button>
+            </div>
+            <span class="role-badge user" id="roleBadge">Nhân viên</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar" id="sidebar">
+            <h3>Không gian làm việc</h3>
+            <div class="sidebar-item active" onclick="showView('board', this)">
+                <svg class="svg-icon"><use href="#icon-board"/></svg> Bảng công việc
+            </div>
+            <div class="sidebar-item" onclick="showView('myTasks', this)" id="menuMyTasks">
+                <svg class="svg-icon"><use href="#icon-check-circle"/></svg> Việc của tôi
+                <span class="count" id="myTasksCount">0</span>
+            </div>
+            <div class="sidebar-item" onclick="showView('approvals', this)" id="menuApprovals" style="display:none;">
+                <svg class="svg-icon"><use href="#icon-search"/></svg> Duyệt công việc
+                <span class="count" id="approvalsCount">0</span>
+            </div>
+            <h3 style="margin-top:16px;">Báo cáo</h3>
+            <div class="sidebar-item" onclick="showView('stats', this)">
+                <svg class="svg-icon"><use href="#icon-chart"/></svg> Thống kê
+            </div>
+        </aside>
+
+        <main class="main">
+            <div id="viewBoard" class="view">
+                <div class="main-header">
+                    <h1>Bảng công việc</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openTaskModal()">
+                            <svg class="svg-icon"><use href="#icon-plus"/></svg> Tạo công việc
+                        </button>
+                    </div>
+                </div>
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <svg class="svg-icon"><use href="#icon-search"/></svg>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm theo tiêu đề, mô tả..." oninput="onFilterChange()">
+                    </div>
+                    <select class="filter-select" id="filterAssignee" onchange="onFilterChange()">
+                        <option value="">Tất cả người thực hiện</option>
+                    </select>
+                    <select class="filter-select" id="filterPriority" onchange="onFilterChange()">
+                        <option value="">Mọi độ ưu tiên</option>
+                        <option value="high">Cao</option>
+                        <option value="medium">Trung bình</option>
+                        <option value="low">Thấp</option>
+                    </select>
+                    <select class="filter-select" id="filterSort" onchange="onFilterChange()">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="priority">Ưu tiên cao</option>
+                        <option value="dueDate">Hạn chót</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" onclick="clearFilters()">
+                        <svg class="svg-icon"><use href="#icon-clear-filter"/></svg> Xóa lọc
+                    </button>
+                </div>
+                <div class="board" id="boardColumns"></div>
+            </div>
+
+            <div id="viewMyTasks" class="view" style="display:none;">
+                <div class="main-header">
+                    <h1>Việc của tôi</h1>
+                </div>
+                <div id="myTasksList"></div>
+            </div>
+
+            <div id="viewApprovals" class="view" style="display:none;">
+                <div class="main-header">
+                    <h1>Duyệt công việc</h1>
+                    <span id="pendingApprovalsLabel" style="color:#6b778c;font-size:14px;"></span>
+                </div>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchApprovalTab('pending', this)">
+                        <svg class="svg-icon"><use href="#icon-clock"/></svg> Chờ duyệt
+                    </div>
+                    <div class="tab" onclick="switchApprovalTab('approved', this)">
+                        <svg class="svg-icon"><use href="#icon-thumbs-up"/></svg> Đã duyệt
+                    </div>
+                    <div class="tab" onclick="switchApprovalTab('rejected', this)">
+                        <svg class="svg-icon"><use href="#icon-thumbs-down"/></svg> Từ chối
+                    </div>
+                </div>
+                <div id="approvalsList"></div>
+            </div>
+
+            <div id="viewStats" class="view" style="display:none;">
+                <div class="main-header">
+                    <h1>Thống kê</h1>
+                </div>
+                <div class="stats" id="statsCards"></div>
+                <div id="statsDetail"></div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand-block">
+                <div class="footer-brand-name">
+                    <svg class="svg-icon"><use href="#icon-diamond"/></svg> HMB Agency
+                </div>
+                <div class="footer-tagline">
+                    Nền tảng quản lý công việc và phối hợp đội ngũ hiện đại. 
+                    Theo dõi tiến độ, duyệt công việc và tối ưu hiệu suất làm việc.
+                </div>
+            </div>
+            <div class="footer-contact">
+                <div class="footer-contact-title">Liên hệ với chúng tôi</div>
+                <div class="footer-contact-item">
+                    <div class="icon-box"><svg class="svg-icon"><use href="#icon-phone"/></svg></div>
+                    <div class="info">
+                        <span class="info-label">Hotline</span>
+                        <a href="tel:0855555140">0855 555 140</a>
+                    </div>
+                </div>
+                <div class="footer-contact-item">
+                    <div class="icon-box"><svg class="svg-icon"><use href="#icon-mail"/></svg></div>
+                    <div class="info">
+                        <span class="info-label">Email</span>
+                        <a href="mailto:hmb.agency.group@gmail.com">hmb.agency.group@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-bottom">
+                <span>© 2025 HMB Agency. All rights reserved.</span>
+                <span>Made with <svg class="svg-icon heart" style="font-size:12px;"><use href="#icon-heart"/></svg> by HMB Team</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Task Modal (Create) -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <h2 id="taskModalTitle">Tạo công việc mới</h2>
+            <div class="form-group">
+                <label>Tiêu đề *</label>
+                <input type="text" id="taskTitle" placeholder="Nhập tiêu đề công việc...">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="taskDesc" placeholder="Mô tả chi tiết..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Người được giao</label>
+                    <select id="taskAssignee">
+                        <option value="user1">Nguyễn Văn A</option>
+                        <option value="user2">Trần Thị B</option>
+                        <option value="user3">Lê Văn C</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Độ ưu tiên</label>
+                    <select id="taskPriority">
+                        <option value="low">Thấp</option>
+                        <option value="medium" selected>Trung bình</option>
+                        <option value="high">Cao</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hạn chót</label>
+                    <input type="date" id="taskDueDate">
+                </div>
+                <div class="form-group">
+                    <label>Nhãn</label>
+                    <input type="text" id="taskLabels" placeholder="bug, feature, design...">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" style="background:#dfe1e6;color:#172b4d;" onclick="closeTaskModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="saveTask()">
+                    <svg class="svg-icon"><use href="#icon-check"/></svg> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal modal-wide">
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="confirm-box">
+            <h2><svg class="svg-icon"><use href="#icon-trash"/></svg> Xóa công việc</h2>
+            <p>Bạn có chắc chắn muốn xóa công việc này không? Hành động này không thể hoàn tác.</p>
+            <div class="task-preview" id="deleteTaskPreview"></div>
+            <div class="confirm-actions">
+                <button class="btn" style="background:#dfe1e6;color:#172b4d;" onclick="closeDeleteModal()">Hủy</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    <svg class="svg-icon"><use href="#icon-trash"/></svg> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== DATA =====================
+        const ASSIGNEES = { user1: 'Nguyễn Văn A', user2: 'Trần Thị B', user3: 'Lê Văn C' };
+        const PRIORITY_LABELS = { low: 'Thấp', medium: 'Trung bình', high: 'Cao' };
+        const PRIORITY_WEIGHT = { high: 3, medium: 2, low: 1 };
+
+        function svgIcon(id, extraClass = '') {
+            return `<svg class="svg-icon ${extraClass}"><use href="#icon-${id}"/></svg>`;
+        }
+
+        let tasks = [];
+        let currentRole = 'user';
+        let currentUser = 'user1';
+        let currentApprovalTab = 'pending';
+        let taskIdCounter = 1;
+        let pendingDeleteId = null;
+        let currentDetailTaskId = null;
+
+        // ===================== STORAGE =====================
+        function saveData() {
+            localStorage.setItem('hmbAgencyTasks', JSON.stringify(tasks));
+            localStorage.setItem('hmbAgencyCounter', taskIdCounter);
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('hmbAgencyTasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+                // Backfill missing fields for old tasks
+                tasks.forEach(t => {
+                    if (t.comments === undefined) t.comments = [];
+                    if (t.history === undefined) t.history = [];
+                    if (t.labels === undefined) t.labels = [];
+                    if (t.dueDate === undefined) t.dueDate = null;
+                });
+                taskIdCounter = parseInt(localStorage.getItem('hmbAgencyCounter') || '1');
+            } else {
+                const now = Date.now();
+                tasks = [
+                    { id: 1, title: 'Thiết kế giao diện trang chủ', desc: 'Tạo mockup Figma cho trang chủ mới', assignee: 'user1', priority: 'high', status: 'todo', createdAt: now, completedAt: null, approvalStatus: null, approvedBy: null, rejectionReason: null, dueDate: now + 3*86400000, labels: ['design', 'ui'], comments: [], history: [{ at: now, text: 'Tạo công việc', by: 'admin' }] },
+                    { id: 2, title: 'Viết API đăng nhập', desc: 'Xây dựng endpoint /api/login với JWT', assignee: 'user1', priority: 'high', status: 'progress', createdAt: now, completedAt: null, approvalStatus: null, approvedBy: null, rejectionReason: null, dueDate: now + 2*86400000, labels: ['backend'], comments: [{ id: 1, author: 'admin', text: 'Cần đảm bảo có rate limiting nhé!', at: now - 3600000 }], history: [{ at: now, text: 'Tạo công việc', by: 'admin' }, { at: now - 3600000, text: 'Chuyển sang Đang làm', by: 'user1' }] },
+                    { id: 3, title: 'Cập nhật tài liệu hướng dẫn', desc: 'Viết lại README cho dự án', assignee: 'user2', priority: 'low', status: 'todo', createdAt: now - 86400000, completedAt: null, approvalStatus: null, approvedBy: null, rejectionReason: null, dueDate: now + 7*86400000, labels: ['docs'], comments: [], history: [{ at: now - 86400000, text: 'Tạo công việc', by: 'admin' }] },
+                    { id: 4, title: 'Fix bug hiển thị trên mobile', desc: 'Sửa lỗi layout trên màn hình nhỏ', assignee: 'user3', priority: 'medium', status: 'done', createdAt: now - 2*86400000, completedAt: now - 3600000, approvalStatus: 'pending', approvedBy: null, rejectionReason: null, dueDate: now - 86400000, labels: ['bug', 'mobile'], comments: [], history: [{ at: now - 2*86400000, text: 'Tạo công việc', by: 'admin' }, { at: now - 3600000, text: 'Chuyển sang Hoàn thành', by: 'user3' }] },
+                    { id: 5, title: 'Tối ưu truy vấn database', desc: 'Thêm index cho các bảng chính', assignee: 'user2', priority: 'medium', status: 'done', createdAt: now - 5*86400000, completedAt: now - 2*86400000, approvalStatus: 'approved', approvedBy: 'admin', rejectionReason: null, dueDate: now - 3*86400000, labels: ['backend', 'performance'], comments: [], history: [{ at: now - 5*86400000, text: 'Tạo công việc', by: 'admin' }, { at: now - 2*86400000, text: 'Chuyển sang Hoàn thành', by: 'user2' }, { at: now - 2*86400000 + 1800000, text: 'Đã duyệt', by: 'admin' }] },
+                    { id: 6, title: 'Viết unit test module thanh toán', desc: 'Đảm bảo coverage > 80%', assignee: 'user1', priority: 'high', status: 'done', createdAt: now - 4*86400000, completedAt: now - 86400000, approvalStatus: 'rejected', approvedBy: 'admin', rejectionReason: 'Cần bổ sung thêm test cases cho edge cases', dueDate: now - 86400000, labels: ['testing'], comments: [], history: [{ at: now - 4*86400000, text: 'Tạo công việc', by: 'admin' }, { at: now - 86400000, text: 'Chuyển sang Hoàn thành', by: 'user1' }, { at: now - 86000000, text: 'Từ chối duyệt', by: 'admin' }] }
+                ];
+                taskIdCounter = 7;
+            }
+        }
+
+        // ===================== FILTER STATE =====================
+        let filterState = { search: '', assignee: '', priority: '', sort: 'newest' };
+
+        function onFilterChange() {
+            filterState.search = document.getElementById('searchInput').value.trim().toLowerCase();
+            filterState.assignee = document.getElementById('filterAssignee').value;
+            filterState.priority = document.getElementById('filterPriority').value;
+            filterState.sort = document.getElementById('filterSort').value;
+            renderBoard();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterAssignee').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterSort').value = 'newest';
+            filterState = { search: '', assignee: '', priority: '', sort: 'newest' };
+            renderBoard();
+        }
+
+        function applyFiltersAndSort(list) {
+            let result = list.slice();
+            if (filterState.search) {
+                const s = filterState.search;
+                result = result.filter(t =>
+                    (t.title || '').toLowerCase().includes(s) ||
+                    (t.desc || '').toLowerCase().includes(s) ||
+                    (t.labels || []).some(l => l.toLowerCase().includes(s)) ||
+                    String(t.id).includes(s)
+                );
+            }
+            if (filterState.assignee) result = result.filter(t => t.assignee === filterState.assignee);
+            if (filterState.priority) result = result.filter(t => t.priority === filterState.priority);
+
+            if (filterState.sort === 'newest') result.sort((a, b) => b.createdAt - a.createdAt);
+            else if (filterState.sort === 'oldest') result.sort((a, b) => a.createdAt - b.createdAt);
+            else if (filterState.sort === 'priority') result.sort((a, b) => PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority]);
+            else if (filterState.sort === 'dueDate') {
+                result.sort((a, b) => {
+                    if (!a.dueDate) return 1;
+                    if (!b.dueDate) return -1;
+                    return a.dueDate - b.dueDate;
+                });
+            }
+            return result;
+        }
+
+        // ===================== RENDER =====================
+        function render() {
+            renderBoard();
+            renderMyTasks();
+            renderApprovals();
+            renderStats();
+            updateSidebarCounts();
+            updateRoleUI();
+            updateFilterAssigneeOptions();
+        }
+
+        function updateFilterAssigneeOptions() {
+            const sel = document.getElementById('filterAssignee');
+            const currentVal = sel.value;
+            sel.innerHTML = '<option value="">Tất cả người thực hiện</option>';
+            Object.entries(ASSIGNEES).forEach(([id, name]) => {
+                sel.innerHTML += `<option value="${id}">${name}</option>`;
+            });
+            sel.value = currentVal;
+        }
+
+        function renderBoard() {
+            const columns = [
+                { id: 'todo', title: 'Cần làm', icon: 'icon-tag', statusClass: 'status-todo' },
+                { id: 'progress', title: 'Đang làm', icon: 'icon-play', statusClass: 'status-progress' },
+                { id: 'done', title: 'Hoàn thành', icon: 'icon-check-circle', statusClass: 'status-done' }
+            ];
+
+            const board = document.getElementById('boardColumns');
+            board.innerHTML = columns.map(col => {
+                const allCol = tasks.filter(t => t.status === col.id);
+                const colTasks = applyFiltersAndSort(allCol);
+                return `
+                    <div class="column">
+                        <div class="column-header">
+                            <span class="column-title">${svgIcon(col.icon)} ${col.title}</span>
+                            <span class="column-count">${colTasks.length}${colTasks.length !== allCol.length ? '/' + allCol.length : ''}</span>
+                        </div>
+                        <div class="column-body">
+                            ${colTasks.length === 0 
+                                ? `<div class="empty-state">${svgIcon('inbox')}<span>${allCol.length === 0 ? 'Chưa có công việc' : 'Không khớp bộ lọc'}</span></div>` 
+                                : colTasks.map(t => renderTaskCard(t, col.statusClass)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function isOverdue(task) {
+            return task.dueDate && task.dueDate < Date.now() && task.status !== 'done';
+        }
+
+        function formatDueDate(ts) {
+            const d = new Date(ts);
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function renderTaskCard(task, statusClass) {
+            let cardClass = 'task-card';
+            let extraBadge = '';
+
+            if (task.status === 'done') {
+                if (task.approvalStatus === 'approved') {
+                    cardClass += ' approved';
+                    extraBadge = `<span class="task-status status-approved">${svgIcon('thumbs-up')} Đã duyệt</span>`;
+                } else if (task.approvalStatus === 'rejected') {
+                    cardClass += ' rejected';
+                    extraBadge = `<span class="task-status status-rejected">${svgIcon('thumbs-down')} Từ chối</span>`;
+                } else {
+                    extraBadge = `<span class="task-status status-done">${svgIcon('clock')} Chờ duyệt</span>`;
+                }
+            } else {
+                const statusIcon = task.status === 'todo' ? 'tag' : 'play';
+                extraBadge = `<span class="task-status ${statusClass}">${svgIcon(statusIcon)} ${task.status === 'todo' ? 'Cần làm' : 'Đang làm'}</span>`;
+            }
+
+            const assigneeName = ASSIGNEES[task.assignee] || task.assignee;
+            const priorityClass = task.priority;
+            const overdue = isOverdue(task);
+            const commentCount = (task.comments || []).length;
+
+            const labelBadges = (task.labels || []).slice(0, 3).map(l => 
+                `<span class="task-badge">${svgIcon('tag')} ${escapeHtml(l)}</span>`
+            ).join('');
+
+            return `
+                <div class="${cardClass}" onclick="showTaskDetail(${task.id})">
+                    <div class="priority-bar ${priorityClass}"></div>
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    <div class="task-desc">${escapeHtml(task.desc || 'Không có mô tả')}</div>
+                    <div class="task-badges">
+                        ${labelBadges}
+                        ${task.dueDate ? `<span class="task-badge ${overdue ? 'overdue' : ''}">${svgIcon('calendar')} ${formatDueDate(task.dueDate)}</span>` : ''}
+                        ${commentCount > 0 ? `<span class="task-badge comments">${svgIcon('comment')} ${commentCount}</span>` : ''}
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-id">TASK-${task.id}</span>
+                        ${extraBadge}
+                    </div>
+                    <div class="task-assignee">${svgIcon('user')} ${assigneeName}</div>
+                    ${renderTaskActions(task)}
+                </div>
+            `;
+        }
+
+        function renderTaskActions(task) {
+            if (currentRole === 'admin') {
+                if (task.status === 'done' && task.approvalStatus === 'pending') {
+                    return `
+                        <div class="task-actions" onclick="event.stopPropagation()">
+                            <button class="btn btn-sm btn-success" onclick="approveTask(${task.id})">${svgIcon('check')} Duyệt</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectTask(${task.id})">${svgIcon('close')} Từ chối</button>
+                        </div>
+                    `;
+                }
+                return '';
+            }
+            if (task.assignee !== currentUser) return '';
+
+            const deleteBtn = task.status === 'todo'
+                ? `<button class="btn btn-sm btn-delete" onclick="event.stopPropagation();openDeleteModal(${task.id})">${svgIcon('trash')} Xóa</button>`
+                : '';
+
+            if (task.status === 'todo') {
+                return `
+                    <div class="task-actions" onclick="event.stopPropagation()">
+                        <button class="btn btn-sm btn-primary" onclick="updateStatus(${task.id}, 'progress')">${svgIcon('play')} Bắt đầu</button>
+                        <button class="btn btn-sm btn-success" onclick="updateStatus(${task.id}, 'done')">${svgIcon('check')} Xong</button>
+                        ${deleteBtn}
+                    </div>
+                `;
+            }
+            if (task.status === 'progress') {
+                return `
+                    <div class="task-actions" onclick="event.stopPropagation()">
+                        <button class="btn btn-sm btn-success" onclick="updateStatus(${task.id}, 'done')">${svgIcon('check')} Hoàn thành</button>
+                    </div>
+                `;
+            }
+            if (task.status === 'done' && task.approvalStatus === 'rejected') {
+                return `
+                    <div class="task-actions" onclick="event.stopPropagation()">
+                        <button class="btn btn-sm btn-primary" onclick="updateStatus(${task.id}, 'progress')">${svgIcon('refresh')} Làm lại</button>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        function renderMyTasks() {
+            const myTasks = tasks.filter(t => t.assignee === currentUser);
+            const container = document.getElementById('myTasksList');
+
+            if (myTasks.length === 0) {
+                container.innerHTML = `<div class="empty-state">${svgIcon('inbox')}<span>Bạn chưa có công việc nào</span></div>`;
+                return;
+            }
+
+            const grouped = {
+                pending: myTasks.filter(t => t.status === 'done' && t.approvalStatus === 'pending'),
+                active: myTasks.filter(t => t.status !== 'done'),
+                approved: myTasks.filter(t => t.status === 'done' && t.approvalStatus === 'approved'),
+                rejected: myTasks.filter(t => t.status === 'done' && t.approvalStatus === 'rejected')
+            };
+
+            let html = '';
+            if (grouped.active.length) {
+                html += `<h3 style="font-size:14px;color:#5e6c84;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${svgIcon('play')} Đang thực hiện (${grouped.active.length})</h3>`;
+                html += `<div class="board" style="grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));">${grouped.active.map(t => renderTaskCard(t, 'status-progress')).join('')}</div>`;
+            }
+            if (grouped.pending.length) {
+                html += `<h3 style="font-size:14px;color:#5e6c84;text-transform:uppercase;margin:24px 0 12px;display:flex;align-items:center;gap:6px;">${svgIcon('clock')} Chờ duyệt (${grouped.pending.length})</h3>`;
+                html += `<div class="board" style="grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));">${grouped.pending.map(t => renderTaskCard(t, 'status-done')).join('')}</div>`;
+            }
+            if (grouped.approved.length) {
+                html += `<h3 style="font-size:14px;color:#5e6c84;text-transform:uppercase;margin:24px 0 12px;display:flex;align-items:center;gap:6px;">${svgIcon('thumbs-up')} Đã duyệt (${grouped.approved.length})</h3>`;
+                html += `<div class="board" style="grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));">${grouped.approved.map(t => renderTaskCard(t, 'status-done')).join('')}</div>`;
+            }
+            if (grouped.rejected.length) {
+                html += `<h3 style="font-size:14px;color:#de350b;text-transform:uppercase;margin:24px 0 12px;display:flex;align-items:center;gap:6px;">${svgIcon('thumbs-down')} Bị từ chối (${grouped.rejected.length})</h3>`;
+                html += `<div class="board" style="grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));">${grouped.rejected.map(t => renderTaskCard(t, 'status-done')).join('')}</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function renderApprovals() {
+            if (currentRole !== 'admin') return;
+            const filterMap = {
+                pending: t => t.status === 'done' && t.approvalStatus === 'pending',
+                approved: t => t.approvalStatus === 'approved',
+                rejected: t => t.approvalStatus === 'rejected'
+            };
+            const filtered = tasks.filter(filterMap[currentApprovalTab]);
+            const container = document.getElementById('approvalsList');
+            const pendingCount = tasks.filter(t => t.status === 'done' && t.approvalStatus === 'pending').length;
+            document.getElementById('pendingApprovalsLabel').textContent = `${pendingCount} công việc đang chờ duyệt`;
+
+            if (filtered.length === 0) {
+                const msgs = {
+                    pending: { icon: 'party', text: 'Không có công việc nào đang chờ duyệt' },
+                    approved: { icon: 'inbox', text: 'Chưa có công việc nào được duyệt' },
+                    rejected: { icon: 'inbox', text: 'Chưa có công việc nào bị từ chối' }
+                };
+                container.innerHTML = `<div class="empty-state">${svgIcon(msgs[currentApprovalTab].icon)}<span>${msgs[currentApprovalTab].text}</span></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(task => {
+                const assigneeName = ASSIGNEES[task.assignee] || task.assignee;
+                let badge = '';
+                if (task.approvalStatus === 'approved') badge = `<span class="task-status status-approved">${svgIcon('thumbs-up')} Đã duyệt</span>`;
+                else if (task.approvalStatus === 'rejected') badge = `<span class="task-status status-rejected">${svgIcon('thumbs-down')} Từ chối</span>`;
+                else badge = `<span class="task-status status-done">${svgIcon('clock')} Chờ duyệt</span>`;
+
+                return `
+                    <div class="approval-card" onclick="showTaskDetail(${task.id})">
+                        <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:180px;">
+                                <div class="task-title">${escapeHtml(task.title)}</div>
+                                <div class="task-desc" style="-webkit-line-clamp:2;">${escapeHtml(task.desc || '')}</div>
+                                <div style="font-size:12px;color:#6b778c;margin-top:6px;display:flex;align-items:center;gap:4px;">
+                                    ${svgIcon('user')} ${assigneeName} &nbsp;•&nbsp; TASK-${task.id}
+                                </div>
+                                ${task.rejectionReason ? `<div style="font-size:12px;color:#de350b;margin-top:8px;padding:8px;background:#fff5f5;border-radius:4px;">Lý do từ chối: ${escapeHtml(task.rejectionReason)}</div>` : ''}
+                            </div>
+                            <div>${badge}</div>
+                        </div>
+                        ${task.approvalStatus === 'pending' ? `
+                            <div class="task-actions" style="margin-top:12px;" onclick="event.stopPropagation()">
+                                <button class="btn btn-sm btn-success" onclick="approveTask(${task.id})">${svgIcon('check')} Duyệt</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejectTask(${task.id})">${svgIcon('close')} Từ chối</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStats() {
+            const total = tasks.length;
+            const pending = tasks.filter(t => t.status === 'done' && t.approvalStatus === 'pending').length;
+            const approved = tasks.filter(t => t.approvalStatus === 'approved').length;
+            const rejected = tasks.filter(t => t.approvalStatus === 'rejected').length;
+            const active = tasks.filter(t => t.status !== 'done').length;
+            const overdue = tasks.filter(t => isOverdue(t)).length;
+
+            document.getElementById('statsCards').innerHTML = `
+                <div class="stat-card">
+                    <div class="label">${svgIcon('board')} Tổng công việc</div>
+                    <div class="value">${total}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">${svgIcon('play')} Đang thực hiện</div>
+                    <div class="value" style="color:#0052cc;">${active}</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="label">${svgIcon('clock')} Chờ duyệt</div>
+                    <div class="value">${pending}</div>
+                </div>
+                <div class="stat-card approved">
+                    <div class="label">${svgIcon('thumbs-up')} Đã duyệt</div>
+                    <div class="value">${approved}</div>
+                </div>
+                <div class="stat-card rejected">
+                    <div class="label">${svgIcon('thumbs-down')} Từ chối</div>
+                    <div class="value">${rejected}</div>
+                </div>
+                <div class="stat-card rejected">
+                    <div class="label">${svgIcon('alert')} Quá hạn</div>
+                    <div class="value">${overdue}</div>
+                </div>
+            `;
+
+            const byAssignee = {};
+            tasks.forEach(t => {
+                if (!byAssignee[t.assignee]) byAssignee[t.assignee] = { total: 0, done: 0, overdue: 0 };
+                byAssignee[t.assignee].total++;
+                if (t.status === 'done') byAssignee[t.assignee].done++;
+                if (isOverdue(t)) byAssignee[t.assignee].overdue++;
+            });
+
+            let detailHtml = '<div class="stats-table-wrapper">';
+            detailHtml += '<h3 style="margin-bottom:16px;font-size:16px;display:flex;align-items:center;gap:6px;">' + svgIcon('user') + ' Theo nhân viên</h3>';
+            detailHtml += '<table>';
+            detailHtml += '<tr style="border-bottom:2px solid #dfe1e6;"><th style="text-align:left;padding:8px;">Nhân viên</th><th style="text-align:right;padding:8px;">Tổng</th><th style="text-align:right;padding:8px;">Hoàn thành</th><th style="text-align:right;padding:8px;">Quá hạn</th><th style="text-align:right;padding:8px;">Tỷ lệ</th></tr>';
+            Object.entries(byAssignee).forEach(([id, data]) => {
+                const pct = data.total ? Math.round(data.done / data.total * 100) : 0;
+                detailHtml += `<tr style="border-bottom:1px solid #f4f5f7;">
+                    <td style="padding:8px;">${ASSIGNEES[id] || id}</td>
+                    <td style="text-align:right;padding:8px;">${data.total}</td>
+                    <td style="text-align:right;padding:8px;">${data.done}</td>
+                    <td style="text-align:right;padding:8px;color:${data.overdue > 0 ? '#de350b' : '#6b778c'};font-weight:${data.overdue > 0 ? '700' : '400'};">${data.overdue}</td>
+                    <td style="text-align:right;padding:8px;font-weight:600;color:${pct >= 70 ? '#36b37e' : pct >= 40 ? '#ffab00' : '#de350b'}">${pct}%</td>
+                </tr>`;
+            });
+            detailHtml += '</table></div>';
+            document.getElementById('statsDetail').innerHTML = detailHtml;
+        }
+
+        function updateSidebarCounts() {
+            const myTasks = tasks.filter(t => t.assignee === currentUser);
+            document.getElementById('myTasksCount').textContent = myTasks.length;
+            const pendingApprovals = tasks.filter(t => t.status === 'done' && t.approvalStatus === 'pending').length;
+            document.getElementById('approvalsCount').textContent = pendingApprovals;
+        }
+
+        function updateRoleUI() {
+            const badge = document.getElementById('roleBadge');
+            const menuApprovals = document.getElementById('menuApprovals');
+            const btnUser = document.getElementById('roleUser');
+            const btnAdmin = document.getElementById('roleAdmin');
+
+            if (currentRole === 'admin') {
+                badge.textContent = 'Admin';
+                badge.className = 'role-badge admin';
+                menuApprovals.style.display = 'flex';
+                btnAdmin.classList.add('active');
+                btnUser.classList.remove('active');
+                if (document.getElementById('viewMyTasks').style.display !== 'none') {
+                    showView('board', document.querySelector('.sidebar-item'));
+                }
+            } else {
+                badge.textContent = 'Nhân viên';
+                badge.className = 'role-badge user';
+                menuApprovals.style.display = 'none';
+                btnUser.classList.add('active');
+                btnAdmin.classList.remove('active');
+                if (document.getElementById('viewApprovals').style.display !== 'none') {
+                    showView('board', document.querySelector('.sidebar-item'));
+                }
+            }
+        }
+
+        // ===================== ACTIONS =====================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('active');
+            }
+        }
+
+        function switchRole(role) {
+            currentRole = role;
+            render();
+            notify(role === 'admin' ? 'Đã chuyển sang chế độ Admin' : 'Đã chuyển sang chế độ Nhân viên', 'info', role === 'admin' ? 'shield' : 'user');
+        }
+
+        function showView(view, el) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            const viewEl = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
+            if (viewEl) viewEl.style.display = 'block';
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            if (el) el.classList.add('active');
+            if (view === 'approvals') renderApprovals();
+            closeSidebarOnMobile();
+        }
+
+        function switchApprovalTab(tab, el) {
+            currentApprovalTab = tab;
+            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderApprovals();
+        }
+
+        function logHistory(task, text) {
+            if (!task.history) task.history = [];
+            task.history.push({ at: Date.now(), text: text, by: currentRole === 'admin' ? 'admin' : currentUser });
+        }
+
+        function updateStatus(taskId, newStatus) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (newStatus === 'done') {
+                task.status = 'done';
+                task.completedAt = Date.now();
+                task.approvalStatus = 'pending';
+                task.approvedBy = null;
+                task.rejectionReason = null;
+                logHistory(task, 'Chuyển sang Hoàn thành');
+                notify('Đã đánh dấu hoàn thành, chờ Admin duyệt', 'success', 'check');
+            } else {
+                task.status = newStatus;
+                task.completedAt = null;
+                task.approvalStatus = null;
+                logHistory(task, newStatus === 'progress' ? 'Chuyển sang Đang làm' : 'Chuyển sang Cần làm');
+                notify('Đã cập nhật trạng thái công việc', 'info', 'refresh');
+            }
+            saveData();
+            render();
+        }
+
+        function approveTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.approvalStatus = 'approved';
+            task.approvedBy = 'admin';
+            task.rejectionReason = null;
+            logHistory(task, 'Đã duyệt');
+            saveData();
+            render();
+            notify(`Đã duyệt công việc: ${task.title}`, 'success', 'thumbs-up');
+        }
+
+        function rejectTask(taskId) {
+            const reason = prompt('Nhập lý do từ chối (không bắt buộc):');
+            if (reason === null) return;
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.approvalStatus = 'rejected';
+            task.approvedBy = 'admin';
+            task.rejectionReason = reason || 'Không có lý do cụ thể';
+            logHistory(task, 'Từ chối duyệt');
+            saveData();
+            render();
+            notify(`Đã từ chối công việc: ${task.title}`, 'error', 'thumbs-down');
+        }
+
+        // ===================== DELETE =====================
+        function openDeleteModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            pendingDeleteId = taskId;
+            document.getElementById('deleteTaskPreview').textContent = `TASK-${task.id}: ${task.title}`;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        function confirmDelete() {
+            if (pendingDeleteId === null) return;
+            const task = tasks.find(t => t.id === pendingDeleteId);
+            if (!task) { closeDeleteModal(); return; }
+            const title = task.title;
+            tasks = tasks.filter(t => t.id !== pendingDeleteId);
+            saveData();
+            closeDeleteModal();
+            render();
+            notify(`Đã xóa công việc: ${title}`, 'success', 'trash');
+        }
+
+        // ===================== CREATE =====================
+        function openTaskModal() {
+            document.getElementById('taskModalTitle').textContent = 'Tạo công việc mới';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskAssignee').value = 'user1';
+            document.getElementById('taskPriority').value = 'medium';
+            document.getElementById('taskDueDate').value = '';
+            document.getElementById('taskLabels').value = '';
+            document.getElementById('taskModal').classList.add('active');
+            setTimeout(() => document.getElementById('taskTitle').focus(), 100);
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+        }
+
+        function saveTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            if (!title) {
+                notify('Vui lòng nhập tiêu đề công việc', 'error', 'close');
+                return;
+            }
+
+            const dueDateVal = document.getElementById('taskDueDate').value;
+            const labelsVal = document.getElementById('taskLabels').value;
+            const labels = labelsVal.split(',').map(l => l.trim()).filter(l => l);
+
+            const task = {
+                id: taskIdCounter++,
+                title: title,
+                desc: document.getElementById('taskDesc').value.trim(),
+                assignee: document.getElementById('taskAssignee').value,
+                priority: document.getElementById('taskPriority').value,
+                status: 'todo',
+                createdAt: Date.now(),
+                completedAt: null,
+                approvalStatus: null,
+                approvedBy: null,
+                rejectionReason: null,
+                dueDate: dueDateVal ? new Date(dueDateVal + 'T23:59:59').getTime() : null,
+                labels: labels,
+                comments: [],
+                history: [{ at: Date.now(), text: 'Tạo công việc', by: currentRole === 'admin' ? 'admin' : currentUser }]
+            };
+
+            tasks.push(task);
+            saveData();
+            closeTaskModal();
+            render();
+            notify(`Đã tạo công việc: ${title}`, 'success', 'check');
+        }
+
+        // ===================== DETAIL (editable) =====================
+        function showTaskDetail(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            currentDetailTaskId = taskId;
+
+            const assigneeName = ASSIGNEES[task.assignee] || task.assignee;
+            const isMine = task.assignee === currentUser;
+
+            // Determine permissions to edit
+            const canEditTitleDesc = currentRole === 'admin' || (currentRole === 'user' && isMine && task.status !== 'done');
+
+            const statusOptions = [
+                { v: 'todo', l: 'Cần làm' },
+                { v: 'progress', l: 'Đang làm' },
+                { v: 'done', l: 'Hoàn thành' }
+            ].map(o => `<option value="${o.v}" ${task.status === o.v ? 'selected' : ''}>${o.l}</option>`).join('');
+
+            const priorityOptions = [
+                { v: 'low', l: 'Thấp' },
+                { v: 'medium', l: 'Trung bình' },
+                { v: 'high', l: 'Cao' }
+            ].map(o => `<option value="${o.v}" ${task.priority === o.v ? 'selected' : ''}>${o.l}</option>`).join('');
+
+            const assigneeOptions = Object.entries(ASSIGNEES).map(([id, name]) =>
+                `<option value="${id}" ${task.assignee === id ? 'selected' : ''}>${name}</option>`
+            ).join('');
+
+            const dueDateStr = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : '';
+
+            let approvalLabel = '—';
+            if (task.approvalStatus === 'pending') approvalLabel = `<span style="display:inline-flex;align-items:center;gap:5px;color:#ffab00;">${svgIcon('clock')} Chờ duyệt</span>`;
+            else if (task.approvalStatus === 'approved') approvalLabel = `<span style="display:inline-flex;align-items:center;gap:5px;color:#36b37e;">${svgIcon('thumbs-up')} Đã duyệt</span>`;
+            else if (task.approvalStatus === 'rejected') approvalLabel = `<span style="display:inline-flex;align-items:center;gap:5px;color:#de350b;">${svgIcon('thumbs-down')} Từ chối</span>`;
+
+            // Comments
+            const commentsHtml = (task.comments || []).map(c => `
+                <div class="comment-item">
+                    <div class="comment-avatar">${(ASSIGNEES[c.author] || 'AD').split(' ').map(w=>w[0]).slice(-2).join('')}</div>
+                    <div class="comment-body">
+                        <div class="comment-header">
+                            <span class="comment-author">${ASSIGNEES[c.author] || c.author}</span>
+                            <span class="comment-time">${new Date(c.at).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div class="comment-text">${escapeHtml(c.text)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const historyHtml = (task.history || []).slice().reverse().map(h => `
+                <div class="history-item">
+                    ${escapeHtml(h.text)} <b>${ASSIGNEES[h.by] || h.by}</b>
+                    <span class="time">${new Date(h.at).toLocaleString('vi-VN')}</span>
+                </div>
+            `).join('');
+
+            // Actions
+            let actionsHtml = '';
+            if (currentRole === 'admin' && task.status === 'done' && task.approvalStatus === 'pending') {
+                actionsHtml = `
+                    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                        <button class="btn btn-success" onclick="approveTask(${task.id});refreshDetail(${task.id});">${svgIcon('check')} Duyệt</button>
+                        <button class="btn btn-danger" onclick="rejectTask(${task.id});refreshDetail(${task.id});">${svgIcon('close')} Từ chối</button>
+                    </div>
+                `;
+            } else if (currentRole === 'user' && isMine) {
+                if (task.status === 'todo') {
+                    actionsHtml = `
+                        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="updateStatus(${task.id},'progress');refreshDetail(${task.id});">${svgIcon('play')} Bắt đầu làm</button>
+                            <button class="btn btn-success" onclick="updateStatus(${task.id},'done');refreshDetail(${task.id});">${svgIcon('check')} Hoàn thành</button>
+                            <button class="btn btn-danger" onclick="closeDetailModal();openDeleteModal(${task.id});">${svgIcon('trash')} Xóa</button>
+                        </div>
+                    `;
+                } else if (task.status === 'progress') {
+                    actionsHtml = `
+                        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                            <button class="btn btn-success" onclick="updateStatus(${task.id},'done');refreshDetail(${task.id});">${svgIcon('check')} Hoàn thành</button>
+                        </div>
+                    `;
+                } else if (task.status === 'done' && task.approvalStatus === 'rejected') {
+                    actionsHtml = `
+                        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="updateStatus(${task.id},'progress');refreshDetail(${task.id});">${svgIcon('refresh')} Làm lại</button>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('detailContent').innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">
+                    <span style="font-size:13px;color:#6b778c;font-weight:600;">TASK-${task.id}</span>
+                    <button class="btn btn-sm" style="background:#dfe1e6;color:#172b4d;" onclick="closeDetailModal()">${svgIcon('close')}</button>
+                </div>
+                <div class="detail-layout">
+                    <div class="detail-main">
+                        <input type="text" class="detail-title-input" id="detailTitle" value="${escapeHtml(task.title)}" ${canEditTitleDesc ? '' : 'readonly'} onblur="updateField(${task.id}, 'title', this.value)">
+                        <textarea class="detail-desc-input" id="detailDesc" placeholder="Thêm mô tả..." ${canEditTitleDesc ? '' : 'readonly'} onblur="updateField(${task.id}, 'desc', this.value)">${escapeHtml(task.desc || '')}</textarea>
+                        
+                        ${task.rejectionReason ? `
+                        <div style="margin-top:12px;padding:10px;background:#fff5f5;border-left:3px solid #de350b;border-radius:4px;font-size:13px;color:#de350b;">
+                            <b>Lý do từ chối:</b> ${escapeHtml(task.rejectionReason)}
+                        </div>` : ''}
+                        
+                        ${actionsHtml}
+
+                        <div class="comments-section">
+                            <div class="comments-title">${svgIcon('comment')} Bình luận (${(task.comments || []).length})</div>
+                            <div class="comment-list" id="commentList">
+                                ${commentsHtml || `<div style="font-size:13px;color:#6b778c;padding:8px;">Chưa có bình luận nào</div>`}
+                            </div>
+                            <div class="comment-compose">
+                                <textarea id="newComment" placeholder="Viết bình luận..." rows="2"></textarea>
+                                <button class="btn btn-primary btn-sm" onclick="addComment(${task.id})">${svgIcon('plus')} Gửi</button>
+                            </div>
+                        </div>
+
+                        <div class="comments-section">
+                            <div class="comments-title">${svgIcon('history')} Lịch sử hoạt động</div>
+                            <div class="history-list">
+                                ${historyHtml || '<div style="font-size:13px;color:#6b778c;">Chưa có hoạt động</div>'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-sidebar">
+                        <div class="side-group">
+                            <div class="side-label">Trạng thái</div>
+                            <select onchange="updateField(${task.id}, 'status', this.value)" ${canEditTitleDesc ? '' : (currentRole === 'user' && isMine ? '' : 'disabled')}>
+                                ${statusOptions}
+                            </select>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Người thực hiện</div>
+                            <select onchange="updateField(${task.id}, 'assignee', this.value)" ${currentRole === 'admin' ? '' : 'disabled'}>
+                                ${assigneeOptions}
+                            </select>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Độ ưu tiên</div>
+                            <select onchange="updateField(${task.id}, 'priority', this.value)" ${canEditTitleDesc || currentRole === 'admin' ? '' : 'disabled'}>
+                                ${priorityOptions}
+                            </select>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Hạn chót</div>
+                            <input type="date" value="${dueDateStr}" onchange="updateField(${task.id}, 'dueDate', this.value)" ${canEditTitleDesc || currentRole === 'admin' ? '' : 'disabled'}>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Nhãn</div>
+                            <input type="text" value="${escapeHtml((task.labels || []).join(', '))}" placeholder="bug, feature..." onblur="updateField(${task.id}, 'labels', this.value)" ${canEditTitleDesc || currentRole === 'admin' ? '' : 'disabled'}>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Duyệt</div>
+                            <div class="side-value">${approvalLabel}</div>
+                        </div>
+                        <div class="side-group">
+                            <div class="side-label">Ngày tạo</div>
+                            <div class="side-value" style="font-size:12px;">${new Date(task.createdAt).toLocaleString('vi-VN')}</div>
+                        </div>
+                        ${task.completedAt ? `
+                        <div class="side-group">
+                            <div class="side-label">Ngày hoàn thành</div>
+                            <div class="side-value" style="font-size:12px;">${new Date(task.completedAt).toLocaleString('vi-VN')}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function refreshDetail(taskId) {
+            // Close and reopen detail to refresh (avoids race if task deleted)
+            if (document.getElementById('detailModal').classList.contains('active')) {
+                showTaskDetail(taskId);
+            }
+        }
+
+        function updateField(taskId, field, value) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (field === 'status') {
+                if (value === task.status) return;
+                if (value === 'done') {
+                    updateStatus(taskId, 'done');
+                } else {
+                    task.status = value;
+                    task.completedAt = null;
+                    task.approvalStatus = null;
+                    logHistory(task, value === 'progress' ? 'Chuyển sang Đang làm' : 'Chuyển sang Cần làm');
+                    saveData();
+                    render();
+                    refreshDetail(taskId);
+                }
+                return;
+            }
+            if (field === 'dueDate') {
+                task.dueDate = value ? new Date(value + 'T23:59:59').getTime() : null;
+                logHistory(task, 'Cập nhật hạn chót');
+            } else if (field === 'labels') {
+                task.labels = value.split(',').map(l => l.trim()).filter(l => l);
+                logHistory(task, 'Cập nhật nhãn');
+            } else if (field === 'title') {
+                if (!value.trim()) return;
+                if (task.title === value.trim()) return;
+                task.title = value.trim();
+                logHistory(task, 'Cập nhật tiêu đề');
+            } else if (field === 'desc') {
+                if (task.desc === value) return;
+                task.desc = value;
+                logHistory(task, 'Cập nhật mô tả');
+            } else if (field === 'assignee') {
+                if (task.assignee === value) return;
+                task.assignee = value;
+                logHistory(task, 'Đổi người thực hiện');
+            } else if (field === 'priority') {
+                if (task.priority === value) return;
+                task.priority = value;
+                logHistory(task, 'Đổi độ ưu tiên');
+            }
+            saveData();
+            render();
+            if (document.getElementById('detailModal').classList.contains('active')) {
+                // Only re-render board etc. Title/desc are already in input
+            }
+        }
+
+        function addComment(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            const input = document.getElementById('newComment');
+            const text = input.value.trim();
+            if (!text) return;
+            if (!task.comments) task.comments = [];
+            task.comments.push({ id: Date.now(), author: currentRole === 'admin' ? 'admin' : currentUser, text: text, at: Date.now() });
+            logHistory(task, 'Đã bình luận');
+            saveData();
+            render();
+            refreshDetail(taskId);
+            notify('Đã gửi bình luận', 'success', 'comment');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            currentDetailTaskId = null;
+        }
+
+        // ===================== HELPERS =====================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function notify(message, type = 'info', iconName = 'check') {
+            const n = document.createElement('div');
+            n.className = `notification ${type}`;
+            n.innerHTML = `${svgIcon(iconName)}<span>${escapeHtml(message)}</span>`;
+            document.body.appendChild(n);
+            setTimeout(() => {
+                n.style.transition = 'opacity 0.3s, transform 0.3s';
+                n.style.opacity = '0';
+                n.style.transform = 'translateX(100%)';
+                setTimeout(() => n.remove(), 300);
+            }, 3000);
+        }
+
+        // ===================== INIT =====================
+        loadData();
+        render();
+
+        document.getElementById('taskModal').addEventListener('click', function(e) {
+            if (e.target === this) closeTaskModal();
+        });
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailModal();
+        });
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+
+        document.getElementById('taskTitle').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveTask();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTaskModal();
+                closeDetailModal();
+                closeDeleteModal();
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
